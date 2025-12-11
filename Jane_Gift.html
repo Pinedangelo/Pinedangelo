@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>A Special Christmas Gift</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at center, #2d0a10, #0f0204); /* Darker, romantic red/black hue */
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            perspective: 1000px;
+            touch-action: none;
+        }
+
+        /* --- Romantic Side Garlands --- */
+        .side-garland {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            z-index: 15;
+            pointer-events: none;
+            padding: 10px 0;
+        }
+
+        /* The String connecting them */
+        .side-garland::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: -1;
+        }
+        
+        .side-garland.left { left: 5px; }
+        .side-garland.right { right: 5px; }
+
+        .ornament {
+            font-size: 2rem;
+            filter: drop-shadow(0 0 10px rgba(255, 105, 180, 0.6));
+            animation: sway 3s ease-in-out infinite alternate;
+            transition: transform 0.3s;
+        }
+        
+        .ornament:nth-child(even) { animation-duration: 4s; animation-direction: alternate-reverse; font-size: 1.8rem; }
+        .ornament:nth-child(3n) { animation-duration: 5s; }
+
+        @keyframes sway {
+            from { transform: rotate(-15deg) translateY(0); }
+            to { transform: rotate(15deg) translateY(-5px); }
+        }
+
+        /* Floating Hearts Background */
+        .heart-bg {
+            position: absolute;
+            color: #ff4d6d;
+            opacity: 0;
+            animation: float-up 12s linear infinite;
+            z-index: 0;
+            text-shadow: 0 0 5px rgba(255, 77, 109, 0.5);
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(110vh) scale(0.5) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.2) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Corner Decorations --- */
+        .corner-holly {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 5px gold);
+        }
+        .top-left { top: 0; left: 0; transform: rotate(0deg); }
+        .top-right { top: 0; right: 0; transform: scaleX(-1); }
+        .bottom-left { bottom: 0; left: 0; transform: scaleY(-1); }
+        .bottom-right { bottom: 0; right: 0; transform: scale(-1); }
+
+        /* Snowflake styling */
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial;
+            text-shadow: 0 0 1px #000;
+            top: -10%;
+            z-index: 1;
+            user-select: none;
+            pointer-events: none;
+            animation-name: snowflakes-fall, snowflakes-shake;
+            animation-duration: 10s, 3s;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: infinite, infinite;
+            animation-play-state: running, running;
+        }
+
+        @keyframes snowflakes-fall {
+            0% { top: -10%; }
+            100% { top: 100%; }
+        }
+
+        @keyframes snowflakes-shake {
+            0% { transform: translateX(0px); }
+            50% { transform: translateX(80px); }
+            100% { transform: translateX(0px); }
+        }
+
+        /* Magic Mouse Trail */
+        .trail {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ff4d6d, transparent); /* Pink trail */
+            pointer-events: none;
+            z-index: 50;
+            animation: fadeOut 1s forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: scale(2); }
+        }
+
+        /* The Gift Box */
+        .gift-container {
+            transition: all 0.5s ease;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            z-index: 20;
+        }
+
+        .gift-box {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            background: #ef4444;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2), 0 15px 30px rgba(0,0,0,0.5);
+            animation: bounce 2s infinite;
+            transform-style: preserve-3d;
+        }
+
+        .gift-lid {
+            position: absolute;
+            top: -20px;
+            left: -5px;
+            width: 160px;
+            height: 40px;
+            background: #dc2626;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 10;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .ribbon-vertical {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 100%;
+            background: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .ribbon-horizontal {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            height: 30px;
+            background: #fbbf24;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+        }
+
+        .bow {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 40px;
+            z-index: 20;
+        }
+        
+        .bow:before, .bow:after {
+            content: '';
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50% 50% 0 50%;
+            background: #fbbf24;
+            border: 4px solid #d97706;
+            top: 10px;
+        }
+        .bow:before { left: 0; transform: rotate(30deg); }
+        .bow:after { right: 0; transform: rotate(-30deg) scaleX(-1); }
+
+        .gift-container:hover .gift-box { animation: shake 0.5s infinite; }
+        .gift-container:active .gift-box { animation: shake 0.2s infinite; }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        /* --- Floating Side Pictures --- */
+        .side-pics-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 25;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .side-pic {
+            position: absolute;
+            padding: 8px;
+            background: #fff0f5; /* Romantic Lavender Blush */
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.4);
+            transform: scale(0);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid #ffb7b2;
+        }
+
+        /* Heart sticker on side pics */
+        .side-pic::after {
+            content: '❤️';
+            position: absolute;
+            bottom: -15px;
+            right: -10px;
+            font-size: 2rem;
+            transform: rotate(20deg);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2));
+            z-index: 30;
+        }
+
+        /* Floaty animation for side pics */
+        @keyframes float-y {
+            0%, 100% { transform: translateY(0) rotate(var(--rot)); }
+            50% { transform: translateY(-15px) rotate(var(--rot)); }
+        }
+
+        .side-pics-visible .side-pic {
+            transform: scale(1) rotate(var(--rot));
+            animation: float-y 4s ease-in-out infinite;
+        }
+
+        /* Specific positions for side pics */
+        .pic-left-1 { top: 20%; left: 12%; --rot: -10deg; animation-delay: 0s; }
+        .pic-left-2 { top: 60%; left: 15%; --rot: 8deg; animation-delay: 1s; }
+        .pic-right-1 { top: 25%; right: 12%; --rot: 12deg; animation-delay: 0.5s; }
+        .pic-right-2 { top: 65%; right: 15%; --rot: -5deg; animation-delay: 1.5s; }
+
+        /* Hide side pics on very small screens to avoid overlap */
+        @media (max-width: 768px) {
+            .side-pic { width: 80px; height: 100px; padding: 4px; }
+            .pic-left-1 { top: 12%; left: 2%; z-index: 16; }
+            .pic-left-2 { top: 70%; left: 2%; z-index: 16; }
+            .pic-right-1 { top: 12%; right: 2%; z-index: 16; }
+            .pic-right-2 { top: 70%; right: 2%; z-index: 16; }
+            
+            .side-garland { width: 40px; }
+            .ornament { font-size: 1.5rem; }
+        }
+
+        /* The Voucher Card */
+        .voucher-wrapper {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+            transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .voucher-visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        .golden-text {
+            background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .glow {
+            animation: glow-pulse 2s infinite;
+        }
+
+        @keyframes glow-pulse {
+            0% { box-shadow: 0 0 5px #ff4d6d; }
+            50% { box-shadow: 0 0 20px #ff4d6d, 0 0 40px #ffb7b2; }
+            100% { box-shadow: 0 0 5px #ff4d6d; }
+        }
+
+        .tilt-card {
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+        
+        /* Candy Cane Border for Voucher */
+        .candy-border {
+            background: repeating-linear-gradient(
+                45deg,
+                #ff4d6d,
+                #ff4d6d 10px,
+                #ffffff 10px,
+                #ffffff 20px
+            );
+            padding: 6px;
+            border-radius: 1rem;
+        }
+
+    </style>
+</head>
+<body class="flex items-center justify-center relative select-none">
+
+    <!-- Romantic Side Garlands -->
+    <div class="side-garland left">
+        <div class="ornament">❤️</div>
+        <div class="ornament">✨</div>
+        <div class="ornament">🌹</div>
+        <div class="ornament">🍬</div>
+        <div class="ornament">❤️</div>
+        <div class="ornament">🎁</div>
+        <div class="ornament">🌹</div>
+    </div>
+
+    <div class="side-garland right">
+        <div class="ornament">❤️</div>
+        <div class="ornament">✨</div>
+        <div class="ornament">🌹</div>
+        <div class="ornament">🍬</div>
+        <div class="ornament">❤️</div>
+        <div class="ornament">🎁</div>
+        <div class="ornament">🌹</div>
+    </div>
+
+    <!-- Background Music Hint -->
+    <div class="absolute top-4 right-4 text-white/50 text-xs z-10">
+        Turn up brightness ✨
+    </div>
+
+    <!-- Intro Text -->
+    <div id="intro-text" class="absolute top-20 text-center z-10 transition-opacity duration-500 px-4">
+        <h1 class="font-['Mountains_of_Christmas'] text-4xl md:text-5xl text-white mb-2 drop-shadow-lg text-pink-100">For My Beautiful Girlfriend</h1>
+        <p class="text-pink-200 animate-pulse font-light tracking-wide">Tap the box to open your surprise</p>
+    </div>
+
+    <!-- The Gift Box -->
+    <div id="gift-trigger" class="gift-container relative mt-48" onclick="openGift()">
+        <div class="gift-box rounded-lg flex items-center justify-center">
+            <div class="ribbon-vertical"></div>
+            <div class="ribbon-horizontal"></div>
+            <div class="gift-lid rounded-md flex justify-center">
+                <div class="ribbon-vertical h-full"></div>
+                <div class="bow"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Side Pictures (Hidden initially) -->
+    <div id="side-pics" class="side-pics-container">
+        <!-- Left Side -->
+        <div class="side-pic pic-left-1 rounded shadow-lg transform rotate-[-15deg]">
+            <img src="Janepic1.jpg" class="w-20 h-20 md:w-32 md:h-32 object-cover bg-pink-50">
+        </div>
+        <div class="side-pic pic-left-2 rounded shadow-lg transform rotate-[10deg]">
+            <img src="Janepic2.jpg" class="w-16 h-16 md:w-28 md:h-28 object-cover bg-pink-50">
+        </div>
+        
+        <!-- Right Side -->
+        <div class="side-pic pic-right-1 rounded shadow-lg transform rotate-[12deg]">
+            <img src="Janepic3.jpg" class="w-20 h-20 md:w-32 md:h-32 object-cover bg-pink-50">
+        </div>
+        <div class="side-pic pic-right-2 rounded shadow-lg transform rotate-[-8deg]">
+            <img src="Janepic4.jpg" class="w-16 h-16 md:w-28 md:h-28 object-cover bg-pink-50">
+        </div>
+    </div>
+
+    <!-- The Voucher (Hidden initially) -->
+    <div id="voucher-display" class="voucher-wrapper absolute z-30 w-full max-w-md px-4 pb-8">
+        <!-- Added wrapper for candy cane border -->
+        <div class="candy-border shadow-2xl glow">
+            <div id="tilt-element" class="tilt-card bg-white rounded-lg overflow-hidden relative">
+                
+                <!-- Decorative Header -->
+                <div class="bg-gradient-to-r from-red-600 to-pink-600 h-28 text-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/snow.png')] opacity-30"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="px-6 pb-6 relative bg-gradient-to-b from-white to-pink-50 text-center pt-0">
+                    
+                    <!-- PHOTO TEMPLATE START (Multi-Photo Collage) -->
+                    <div class="relative h-28 mb-4 -mt-16 flex justify-center items-center">
+                        <!-- Photo 1 (Left) -->
+                        <div class="absolute transform -rotate-12 -translate-x-12 hover:scale-110 hover:z-30 transition duration-300 z-10 w-20 h-24 bg-white p-1 shadow-lg pb-3 rounded-sm">
+                            <img src="Janepic5.jpg" class="w-full h-full object-cover bg-gray-200">
+                        </div>
+                        
+                        <!-- Photo 2 (Center - Main) -->
+                        <div class="absolute transform hover:scale-110 hover:z-30 transition duration-300 z-20 w-24 h-28 bg-white p-1 shadow-xl pb-4 -mt-2 rounded-sm border border-pink-200">
+                            <img src="Janepic6.jpg" class="w-full h-full object-cover bg-gray-200">
+                        </div>
+
+                        <!-- Photo 3 (Right) -->
+                        <div class="absolute transform rotate-12 translate-x-12 hover:scale-110 hover:z-30 transition duration-300 z-10 w-20 h-24 bg-white p-1 shadow-lg pb-3 rounded-sm">
+                            <img src="Janepic7.jpg" class="w-full h-full object-cover bg-gray-200">
+                        </div>
+                    </div>
+                    <!-- PHOTO TEMPLATE END -->
+
+                    <!-- Watermark -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 opacity-5 pointer-events-none">
+                        <svg width="200" height="200" viewBox="0 0 24 24" fill="currentColor"><path d="M12,2L15.09,8.26L22,9.27L17,14.14L18.18,21.02L12,17.77L5.82,21.02L7,14.14L2,9.27L8.91,8.26L12,2M12,17V15H10V17H12M14,17V15H12V17H14M16,17V15H14V17H16M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9Z" /></svg>
+                    </div>
+
+                    <h2 class="font-['Mountains_of_Christmas'] text-2xl text-pink-600 font-bold mb-1 mt-2">Merry Christmas, Love!</h2>
+                    <p class="text-gray-500 uppercase tracking-widest text-[10px] font-semibold mb-2">Exclusive Voucher</p>
+                    
+                    <!-- Updated Text -->
+                    <h3 class="text-3xl md:text-4xl font-bold golden-text mb-2 leading-tight">₱700</h3>
+                    <p class="text-xl md:text-2xl font-bold text-yellow-600 mb-4 font-['Mountains_of_Christmas']">Free Shopping</p>
+                    
+                    <div class="my-4 border-t-2 border-dashed border-pink-200 w-full h-1"></div>
+
+                    <div class="grid grid-cols-2 gap-3 text-left bg-pink-50 p-3 rounded-lg border border-pink-100 text-sm">
+                        <div>
+                            <p class="text-[10px] text-gray-500">Valid Date</p>
+                            <p class="font-bold text-pink-700">Dec 13</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-500">Time</p>
+                            <p class="font-bold text-pink-700">All Day</p>
+                        </div>
+                        <div class="col-span-2">
+                            <p class="text-[10px] text-gray-500">Status</p>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                <p class="font-bold text-green-600 text-xs">Active & Ready</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button class="bg-gray-900 text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition transform hover:scale-105 shadow-lg flex items-center justify-center gap-2 mx-auto w-full group active:scale-95">
+                            <span>Redeem Gift</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                            </svg>
+                        </button>
+                        <p class="text-[10px] text-gray-400 mt-2">*Valid for one-time use only. Terms apply.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Snowfall Effect ---
+        function createSnow() {
+            const snowContainer = document.createElement('div');
+            snowContainer.style.position = 'fixed';
+            snowContainer.style.top = '0';
+            snowContainer.style.left = '0';
+            snowContainer.style.width = '100%';
+            snowContainer.style.height = '100%';
+            snowContainer.style.pointerEvents = 'none';
+            snowContainer.style.zIndex = '1';
+            document.body.appendChild(snowContainer);
+
+            const snowflakeChars = ['❄', '❅', '❆', '•'];
+
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's, ' + (Math.random() * 2 + 1) + 's';
+                snowflake.style.animationDelay = (Math.random() * 5) + 's, ' + (Math.random()) + 's';
+                snowflake.style.opacity = Math.random();
+                snowflake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                snowContainer.appendChild(snowflake);
+            }
+        }
+        createSnow();
+
+        // --- 2. Floating Hearts Background ---
+        function createHearts() {
+            const container = document.body;
+            const heartChars = ['❤️', '💖', '💗', '💕', '🌹'];
+            
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart-bg');
+                heart.textContent = heartChars[Math.floor(Math.random() * heartChars.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                // Varied sizes
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                heart.style.animationDuration = (Math.random() * 5 + 8) + 's';
+                
+                container.appendChild(heart);
+                
+                // Cleanup
+                setTimeout(() => heart.remove(), 13000);
+            }, 600);
+        }
+        createHearts();
+
+
+        // --- 3. Interactive Trail Effect (Mouse + Touch) ---
+        function createTrail(x, y) {
+            const trail = document.createElement('div');
+            trail.className = 'trail';
+            trail.style.left = x + 'px';
+            trail.style.top = y + 'px';
+            
+            const colors = ['#fff', '#ff4d6d', '#ff0000', '#ffb7b2'];
+            trail.style.background = `radial-gradient(circle, ${colors[Math.floor(Math.random() * colors.length)]}, transparent)`;
+            
+            document.body.appendChild(trail);
+
+            setTimeout(() => {
+                trail.remove();
+            }, 1000);
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            createTrail(e.pageX, e.pageY);
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            createTrail(touch.pageX, touch.pageY);
+        }, { passive: true });
+
+
+        // --- 4. Gift Opening Logic ---
+        let isOpen = false;
+
+        function openGift() {
+            if (isOpen) return;
+            isOpen = true;
+
+            const box = document.querySelector('.gift-box');
+            const lid = document.querySelector('.gift-lid');
+            const container = document.getElementById('gift-trigger');
+            const voucher = document.getElementById('voucher-display');
+            const intro = document.getElementById('intro-text');
+            const sidePics = document.getElementById('side-pics');
+
+            // 1. Animate box
+            box.style.animation = 'none'; // Stop shaking
+            lid.style.transform = 'translateY(-100px) rotate(-10deg)';
+            lid.style.opacity = '0';
+            
+            // 2. Hide intro text
+            intro.style.opacity = '0';
+
+            // 3. Show Side Pictures
+            sidePics.style.opacity = '1';
+            sidePics.classList.add('side-pics-visible');
+
+            // 4. Massive Confetti Explosion
+            const duration = 3000;
+            const end = Date.now() + duration;
+
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#ff0000', '#ff4d6d', '#ffffff', '#ffd700']
+            });
+
+            (function frame() {
+                confetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ffd700', '#ff4d6d']
+                });
+                confetti({
+                    particleCount: 5,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff0000', '#ffffff']
+                });
+            
+                if (Date.now() < end) {
+                requestAnimationFrame(frame);
+                }
+            }());
+
+            // 5. Transition to Voucher
+            setTimeout(() => {
+                container.style.transform = 'scale(0)';
+                container.style.opacity = '0';
+                setTimeout(() => {
+                    container.style.display = 'none';
+                    voucher.classList.add('voucher-visible');
+                    
+                    // Add a final "success" burst
+                    confetti({
+                        particleCount: 200,
+                        spread: 100,
+                        origin: { y: 0.6 },
+                        gravity: 0.8,
+                        scalar: 1.2,
+                        colors: ['#ff4d6d', '#ffd700'] 
+                    });
+                }, 300);
+            }, 500);
+        }
+
+        // --- 5. 3D Tilt Effect for Voucher (Mouse + Touch) ---
+        const tiltElement = document.getElementById('tilt-element');
+        const voucherDisplay = document.getElementById('voucher-display');
+
+        function handleTilt(clientX, clientY) {
+            if (!isOpen) return;
+            
+            const rect = tiltElement.getBoundingClientRect();
+            const x = clientX - rect.left; 
+            const y = clientY - rect.top; 
+
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = ((y - centerY) / centerY) * -10; 
+            const rotateY = ((x - centerX) / centerX) * 10;
+
+            tiltElement.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+        }
+
+        function resetTilt() {
+            tiltElement.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+            tiltElement.style.transition = 'transform 0.5s ease';
+        }
+
+        voucherDisplay.addEventListener('mousemove', (e) => {
+            handleTilt(e.clientX, e.clientY);
+        });
+
+        voucherDisplay.addEventListener('mouseleave', resetTilt);
+        
+        voucherDisplay.addEventListener('mouseenter', () => {
+            tiltElement.style.transition = 'transform 0.1s ease'; 
+        });
+
+        voucherDisplay.addEventListener('touchmove', (e) => {
+            e.preventDefault(); 
+            const touch = e.touches[0];
+            tiltElement.style.transition = 'transform 0.1s ease'; 
+            handleTilt(touch.clientX, touch.clientY);
+        }, { passive: false });
+
+        voucherDisplay.addEventListener('touchend', resetTilt);
+
+    </script>
+</body>
+</html>
